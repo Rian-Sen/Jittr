@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Jittr",
+  "version": "1.0",
+  "description": "Track cursor movement to infer attention behavior using machine learning. (Jittr)",
+  "permissions": ["activeTab", "scripting", "storage", "downloads"],
+  "host_permissions": ["<all_urls>", "http://127.0.0.1:8000/*", "http://localhost:8000/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "./icons/logo.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["simulation.html", "simulation.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

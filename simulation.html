@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JITTR - Simulation Interface</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 30s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Custom cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        
+        .custom-cursor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: #00ffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #0066ff;
+            text-shadow: 
+                0 0 20px #0066ff,
+                0 0 40px #0066ff,
+                0 0 60px #0066ff;
+            margin-bottom: 20px;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { 
+                text-shadow: 0 0 20px #0066ff, 0 0 40px #0066ff, 0 0 60px #0066ff; 
+                transform: scale(1);
+            }
+            to { 
+                text-shadow: 0 0 30px #0066ff, 0 0 50px #0066ff, 0 0 70px #0066ff; 
+                transform: scale(1.02);
+            }
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 14px;
+            color: #ff00ff;
+            opacity: 0.6;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.6;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+        
+        .status-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0066ff;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 
+                0 0 30px rgba(0, 102, 255, 0.3),
+                inset 0 0 30px rgba(0, 102, 255, 0.1);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .status-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 0 40px rgba(0, 102, 255, 0.6),
+                inset 0 0 30px rgba(0, 102, 255, 0.2);
+        }
+        
+        .status-text {
+            color: #00ffff;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* Game Interface */
+        .game-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 3;
+            cursor: none;
+        }
+        
+        .metrics-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .metrics-title {
+            color: #ff00ff;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        .metric-label {
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .metric-value {
+            color: #ffffff;
+            font-weight: 700;
+        }
+        
+        .game-button {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #ff00ff;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 0, 255, 0.3) 0%, rgba(255, 0, 255, 0.1) 70%, transparent 100%);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 0 20px rgba(255, 0, 255, 0.5),
+                inset 0 0 20px rgba(255, 0, 255, 0.2);
+            animation: buttonPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes buttonPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 0, 255, 0.5), inset 0 0 20px rgba(255, 0, 255, 0.2);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(255, 0, 255, 0.8), inset 0 0 25px rgba(255, 0, 255, 0.3);
+            }
+        }
+        
+        .game-button:hover {
+            transform: scale(1.1);
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.8),
+                inset 0 0 25px rgba(0, 255, 255, 0.3);
+        }
+        
+        .game-button.target {
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: targetPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes targetPulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 255, 0, 0.2);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(0, 255, 0, 1), inset 0 0 30px rgba(0, 255, 0, 0.4);
+            }
+        }
+        
+        .instruction-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #0066ff;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(0, 102, 255, 0.5);
+        }
+        
+        .instruction-text {
+            color: #00ffff;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, #0066ff, #0044cc);
+            color: #ffffff;
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 102, 255, 0.3);
+        }
+        
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 102, 255, 0.6);
+        }
+        
+        .path-visualization {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .result-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .result-panel h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .result-panel p {
+            font-size: 13px;
+            color: #00ffff;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="customCursor"></div>
+    
+    <div class="container" id="welcomeScreen">
+        <div class="header">
+            <h1 class="title">Simulation Interface</h1>
+            <p class="subtitle">Neural Mouse Tracking Simulator</p>
+            <p class="description">
+                This simulation interface is ready for future enhancements. 
+                Advanced neural tracking algorithms and interactive simulations will be implemented here.
+            </p>
+            
+        </div>
+        
+        <div class="status-panel" id="startGame">
+            <div class="status-text">Simulation Environment Ready</div>
+        </div>
+    </div>
+    
+    <div class="game-container" id="gameContainer">
+    <!-- Metrics Panel (Left) -->
+    <div class="metrics-panel">
+        <div class="metrics-title">Performance Metrics</div>
+        <div class="metric-row">
+            <span class="metric-label">Avg Time Between Clicks:</span>
+            <span class="metric-value" id="avgTime">--</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Click Accuracy:</span>
+            <span class="metric-value" id="accuracy">--</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Max Mouse Acceleration:</span>
+            <span class="metric-value" id="maxAccel">--</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Max Mouse Velocity:</span>
+            <span class="metric-value" id="maxVelocity">--</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Avg Path Deviation:</span>
+            <span class="metric-value" id="avgDeviation">--</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Total Clicks:</span>
+            <span class="metric-value" id="totalClicks">0</span>
+        </div>
+    </div>
+
+    <!-- ADHD Likelihood Panel (Right) -->
+    <div class="result-panel" id="result">
+        <h3>ADHD Likelihood: --</h3>
+        <div class="bar">
+            <div class="fill" style="width:0%"></div>
+        </div>
+        <p>Status: Waiting for data...</p>
+    </div>
+
+    <!-- Path Visualization -->
+    <canvas class="path-visualization" id="pathCanvas"></canvas>
+</div>
+
+    
+    <div class="instruction-overlay" id="instructionOverlay" style="display: none;">
+        <div class="instruction-text">Click buttons as fast as possible!<br>Target button glows green</div>
+        <button class="start-button" id="startButton">Begin Tracking</button>
+    </div>
+
+    <script src="simulation.js"></script>
+</body>
+</html> 

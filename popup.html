@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jittr - Mouse Tracking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JITTR</h1>
+            <p>Neural Mouse Tracking System</p>
+        </div>
+        
+        <div class="status">
+            <div class="status-indicator" id="status-indicator"></div>
+            <div class="status-text" id="status-text">STANDBY</div>
+        </div>
+        
+        <div class="button-container">
+            <button id="simulation-btn" class="cyber-button simulation">
+                <span class="button-text">Launch Simulation</span>
+                <span class="button-glow"></span>
+            </button>
+            <button id="start-btn" class="cyber-button">
+                <span class="button-text">Initialize Tracking</span>
+                <span class="button-glow"></span>
+            </button>
+            <button id="stop-btn" class="cyber-button stop" disabled>
+                <span class="button-text">Terminate Tracking</span>
+                <span class="button-glow"></span>
+            </button>
+        </div>
+        
+        <div class="data-display" id="data-display">
+            <div class="data-content" id="data-content">
+                <div class="no-data">No data collected</div>
+            </div>
+        </div>
+        
+        <div class="prediction-display" id="prediction-display" style="display: none;">
+            <div class="prediction-header">ADHD Prediction</div>
+            <div class="prediction-content" id="prediction-content">
+                <div class="prediction-value" id="prediction-value">--</div>
+                <div class="prediction-label">Probability</div>
+            </div>
+        </div>
+        
+        <div class="background-note">
+            <div class="note-text">TRACKING CONTINUES IN BACKGROUND</div>
+            <div class="note-subtext">Close popup to minimize - indicator remains active</div>
+            <!--<div class="note-subtext">Data files saved to mouseData folder</div>-->
+        </div>
+        
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-br"></div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
