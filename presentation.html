@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jittr - Neural Mouse Tracking System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            overflow: hidden;
+        }
+        
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.07) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 30s linear infinite;
+            z-index: 1;
+            pointer-events: none;
+            box-shadow: 0 0 40px #00ffff22, 0 0 80px #ff00ff11;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .slide {
+            background-color: rgba(0,0,0,0.85);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            z-index: 2;
+            box-shadow: 0 0 40px #00ffff44, 0 0 80px #ff00ff22;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+        
+        .title-slide {
+            text-align: center;
+        }
+        
+        .main-title {
+            font-size: 64px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff, 0 0 80px #ff00ff;
+            margin-bottom: 30px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff, 0 0 80px #ff00ff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 50px #00ffff, 0 0 70px #00ffff, 0 0 100px #ff00ff; }
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            color: #ff00ff;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 800px;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+        }
+        
+        .team-info {
+            font-size: 18px;
+            color: #ffaa00;
+            margin-top: 40px;
+            text-shadow: 0 0 10px #ffaa00, 0 0 20px #00ffff;
+        }
+        
+        .content {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .section-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #ff00ff;
+            letter-spacing: 2px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 255, 255, 0.08);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px #00ffff55, 0 0 60px #ff00ff22;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 0 50px #00ffffcc, 0 0 100px #ff00ff55;
+            border-color: #ff00ff;
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ffaa00;
+            text-shadow: 0 0 10px #ffaa00, 0 0 20px #00ffff;
+        }
+        
+        .feature-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .feature-desc {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.5;
+            text-shadow: 0 0 6px #00ffff44;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .tech-item {
+            background: rgba(0, 102, 255, 0.1);
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px #0066ff55, 0 0 40px #00ffff22;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-item:hover {
+            box-shadow: 0 0 40px #00ffffcc, 0 0 80px #ff00ff55;
+            border-color: #ff00ff;
+        }
+        
+        .tech-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .tech-desc {
+            font-size: 12px;
+            color: #fff;
+            text-shadow: 0 0 6px #00ffff44;
+        }
+        
+        .demo-section {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .demo-text {
+            flex: 1;
+        }
+        
+        .demo-image {
+            flex: 1;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #00ffff;
+            box-shadow: 0 0 30px #00ffff55, 0 0 60px #ff00ff22;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px #00ffff55, 0 0 40px #ff00ff22;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(45deg, #0066ff, #0044cc);
+            color: #fff;
+            box-shadow: 0 0 40px #00ffffcc, 0 0 80px #ff00ff55;
+            border-color: #ff00ff;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            color: #00ffff;
+            font-size: 16px;
+            z-index: 10;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .keyboard-hint {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            color: #888;
+            font-size: 12px;
+            z-index: 10;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .highlight {
+            color: #ff6b6b;
+            font-weight: 700;
+            text-shadow: 0 0 10px #ff6b6b, 0 0 20px #00ffff;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #00ffff;
+            margin: 10px 0;
+            box-shadow: 0 0 20px #00ffff55, 0 0 40px #ff00ff22;
+        }
+        
+        .architecture-diagram {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .arch-component {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px #00ffff55, 0 0 40px #ff00ff22;
+        }
+        
+        .arch-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .arch-desc {
+            font-size: 12px;
+            color: #fff;
+            text-shadow: 0 0 6px #00ffff44;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">8</span>
+    </div>
+    
+    <div class="keyboard-hint">
+        Use ← → keys or click buttons to navigate
+    </div>
+    
+    <!-- Slide 1: Title -->
+    <div class="slide active" id="slide-1">
+        <div class="title-slide">
+            <h1 class="main-title">JITTR</h1>
+            <p class="subtitle">Neural Mouse Tracking System</p>
+            <p class="subtitle">Real-time ADHD prediction through cursor movement analysis</p>
+            <div class="team-info">
+                Built for TerraHacks
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 2: Problem Statement -->
+    <div class="slide" id="slide-2">
+        <div class="content">
+            <h2 class="section-title">The Challenge</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-title">Attention Assessment</div>
+                    <div class="feature-desc">Traditional ADHD diagnosis relies on subjective assessments and expensive clinical evaluations</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <div class="feature-title">Time & Cost</div>
+                    <div class="feature-desc">Current methods are time-consuming, expensive, and require specialized equipment</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Data Gap</div>
+                    <div class="feature-desc">Limited access to continuous, non-invasive behavioral monitoring tools</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 3: Solution -->
+    <div class="slide" id="slide-3">
+        <div class="content">
+            <h2 class="section-title">Our Solution</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🖱️</div>
+                    <div class="feature-title">Real-time Tracking</div>
+                    <div class="feature-desc">Captures mouse movements at 60fps across any webpage with zero user intervention</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <div class="feature-title">ML Predictions</div>
+                    <div class="feature-desc">Trained models analyze velocity, acceleration, and path efficiency for ADHD indicators</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Instant Insights</div>
+                    <div class="feature-desc">Provides real-time behavioral predictions through a cyberpunk-styled interface</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 4: Architecture -->
+    <div class="slide" id="slide-4">
+        <div class="content">
+            <h2 class="section-title">System Architecture</h2>
+            <div class="architecture-diagram">
+                <div class="arch-component">
+                    <div class="arch-title">Chrome Extension</div>
+                    <div class="arch-desc">Mouse tracking, data collection, and user interface</div>
+                </div>
+                <div class="arch-component">
+                    <div class="arch-title">FastAPI Server</div>
+                    <div class="arch-desc">ML model serving and real-time predictions</div>
+                </div>
+                <div class="arch-component">
+                    <div class="arch-title">ML Models</div>
+                    <div class="arch-desc">Logistic Regression, XGBoost, and ADHD-specific models</div>
+                </div>
+            </div>
+            <div class="demo-section">
+                <div class="demo-text">
+                    <h3 style="color: #00ffff; margin-bottom: 20px;">Key Components:</h3>
+                    <ul style="color: #ccc; line-height: 1.8;">
+                        <li><span class="highlight">content.js</span> - Mouse movement capture</li>
+                        <li><span class="highlight">popup.js</span> - User interface logic</li>
+                        <li><span class="highlight">serve_model.py</span> - ML model API</li>
+                        <li><span class="highlight">background.js</span> - Extension service worker</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 5: Features Demo -->
+    <div class="slide" id="slide-5">
+        <div class="content">
+            <h2 class="section-title">Features & Capabilities</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">Live Analytics</div>
+                    <div class="feature-desc">Real-time efficiency metrics, velocity tracking, and path analysis</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">ADHD Prediction</div>
+                    <div class="feature-desc">Instant probability scores based on movement patterns</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <div class="feature-title">Data Export</div>
+                    <div class="feature-desc">CSV and JSON exports for research and analysis</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <div class="feature-title">Simulation Mode</div>
+                    <div class="feature-desc">Controlled testing environment for validation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 6: Technical Stack -->
+    <div class="slide" id="slide-6">
+        <div class="content">
+            <h2 class="section-title">Technology Stack</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-name">Chrome Extension API</div>
+                    <div class="tech-desc">Browser integration and mouse tracking</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">FastAPI</div>
+                    <div class="tech-desc">High-performance ML model serving</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Scikit-learn</div>
+                    <div class="tech-desc">Machine learning models and preprocessing</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">JavaScript</div>
+                    <div class="tech-desc">Real-time data processing and UI</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">CSS3</div>
+                    <div class="tech-desc">Cyberpunk-styled animations and effects</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Python</div>
+                    <div class="tech-desc">Backend ML pipeline and data analysis</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 7: Results & Impact -->
+    <div class="slide" id="slide-7">
+        <div class="content">
+            <h2 class="section-title">Results & Impact</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">High Accuracy</div>
+                    <div class="feature-desc">Trained models achieve strong performance on ADHD prediction tasks</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Real-time Processing</div>
+                    <div class="feature-desc">60fps tracking with instant predictions</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔬</div>
+                    <div class="feature-title">Research Ready</div>
+                    <div class="feature-desc">Export capabilities enable further behavioral research</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <div class="feature-title">Accessible</div>
+                    <div class="feature-desc">No special equipment needed - works on any computer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 8: Future & Conclusion -->
+    <div class="slide" id="slide-8">
+        <div class="content">
+            <h2 class="section-title">Future Vision</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">Web Platform</div>
+                    <div class="feature-desc">Expand to web-based dashboard for clinicians</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Mobile App</div>
+                    <div class="feature-desc">Touch-based tracking for mobile devices</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI Enhancement</div>
+                    <div class="feature-desc">Advanced deep learning models for better predictions</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏥</div>
+                    <div class="feature-title">Clinical Integration</div>
+                    <div class="feature-desc">Partner with healthcare providers for validation</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <h3 style="color: #00ffff; font-size: 32px;">Thank You!</h3>
+                <p style="color: #ccc; margin-top: 20px;">Questions & Discussion</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+        <button class="nav-btn" onclick="nextSlide()">Next →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+        
+        function showSlide(n) {
+            // Hide all slides
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+            
+            // Show current slide
+            const currentSlideElement = document.getElementById(`slide-${n}`);
+            if (currentSlideElement) {
+                currentSlideElement.classList.add('active');
+            }
+            
+            // Update counter
+            document.getElementById('current-slide').textContent = n;
+            document.getElementById('total-slides').textContent = totalSlides;
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Initialize
+        showSlide(1);
+    </script>
+</body>
+</html> 
